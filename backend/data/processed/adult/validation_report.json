@@ -1,0 +1,45 @@
+{
+  "dataset": "adult_census_income",
+  "row_count": 32561,
+  "column_count": 15,
+  "checks": {
+    "schema": {
+      "passed": true,
+      "missing_columns": []
+    },
+    "missing_values": {
+      "passed": true,
+      "unknown_placeholder_cells": {
+        "workclass": 1836,
+        "occupation": 1843,
+        "native-country": 583
+      },
+      "warning": "4262 cells with ' ?' placeholder"
+    },
+    "sensitive_distribution": {
+      "passed": true,
+      "distributions": {
+        "race": {
+          "White": 27816,
+          "Black": 3124,
+          "Asian-Pac-Islander": 1039,
+          "Amer-Indian-Eskimo": 311,
+          "Other": 271
+        },
+        "sex": {
+          "Male": 21790,
+          "Female": 10771
+        }
+      }
+    },
+    "label_balance": {
+      "passed": true,
+      "income_counts": {
+        "<=50K": 24720,
+        ">50K": 7841
+      },
+      "warning": "Class imbalance in income label \u2014 model will use class_weight='balanced'"
+    }
+  },
+  "overall_passed": true
+}

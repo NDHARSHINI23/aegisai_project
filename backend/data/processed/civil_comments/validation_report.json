@@ -1,0 +1,19 @@
+{
+  "dataset": "google/civil_comments",
+  "row_count": 10000,
+  "checks": {
+    "schema": {
+      "passed": true,
+      "missing": []
+    },
+    "nulls": {
+      "passed": true,
+      "null_text_rows": 0
+    },
+    "balance": {
+      "passed": true,
+      "toxic_fraction": 0.5
+    }
+  },
+  "overall_passed": true
+}

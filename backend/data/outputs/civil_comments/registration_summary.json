@@ -1,0 +1,6 @@
+{
+  "dataset": "google/civil_comments",
+  "scanned": 100,
+  "toxic_detected": 44,
+  "new_events_inserted": 0
+}

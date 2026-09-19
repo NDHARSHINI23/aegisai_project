@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "AegisAI Governance Platform"
+description = "A production-grade AI governance and MLOps observability workspace for evaluating models, monitoring drift, auditing safety, analyzing costs, and managing retraining workflows."
+version = "1.0.0"
+id = "artifacts/aegisai"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24718
+
+[services.development]
+run = "pnpm --filter @workspace/aegisai run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/aegisai", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/aegisai/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24718"
+BASE_PATH = "/"

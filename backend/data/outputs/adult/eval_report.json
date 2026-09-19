@@ -1,0 +1,23 @@
+{
+  "framework": "scikit-learn",
+  "dataset": "adult_census_income",
+  "metrics": {
+    "accuracy": 0.8585905112851221
+  },
+  "bias": {
+    "gender": {
+      "disparate_impact": 0.2776740791854586,
+      "statistical_parity_diff": -0.18720870115480592,
+      "bias_scalar": 0.9095346219693473
+    },
+    "race": {
+      "disparate_impact": 0.562514873293376,
+      "statistical_parity_diff": -0.09234493916720694,
+      "bias_scalar": 0.529830065873831
+    },
+    "religion": {
+      "bias_scalar": 0.0,
+      "note": "Religion not tracked in this dataset"
+    }
+  }
+}

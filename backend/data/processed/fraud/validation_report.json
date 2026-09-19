@@ -1,0 +1,34 @@
+{
+  "dataset": "credit_card_fraud",
+  "row_count": 284807,
+  "column_count": 31,
+  "checks": {
+    "schema": {
+      "passed": true,
+      "missing_columns": []
+    },
+    "missing_values": {
+      "passed": true,
+      "total_missing_cells": 0,
+      "by_column": {}
+    },
+    "duplicates": {
+      "passed": false,
+      "duplicate_rows": 1081
+    },
+    "class_imbalance": {
+      "passed": true,
+      "class_counts": {
+        "0": 284315,
+        "1": 492
+      },
+      "minority_fraction": 0.00173,
+      "warning": "Severe class imbalance detected (<1%) \u2014 model will use class_weight='balanced'"
+    },
+    "feature_ranges": {
+      "passed": true,
+      "issues": []
+    }
+  },
+  "overall_passed": false
+}

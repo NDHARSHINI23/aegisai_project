@@ -1,0 +1,60 @@
+import path from 'path';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import { defineConfig } from 'vite';
+
+const port = Number(process.env.PORT || '5173');
+const basePath = process.env.BASE_PATH || '/';
+const apiTarget = process.env.API_TARGET || 'http://127.0.0.1:5000';
+
+export default defineConfig({
+  base: basePath,
+  plugins: [
+    react(),
+    tailwindcss(),
+  ],
+  resolve: {
+    alias: {
+      '@': path.resolve(process.cwd(), 'src'),
+      '@assets': path.resolve(
+        process.cwd(),
+        '..',
+        'attached_assets',
+      ),
+    },
+    dedupe: ['react', 'react-dom'],
+  },
+  root: path.resolve(process.cwd()),
+  build: {
+    outDir: path.resolve(process.cwd(), 'dist/public'),
+    emptyOutDir: true,
+  },
+  server: {
+    port,
+    strictPort: true,
+    host: '0.0.0.0',
+    allowedHosts: true,
+    proxy: {
+      '/api': {
+        target: apiTarget,
+        changeOrigin: true,
+        secure: false,
+      }
+    },
+    fs: {
+      strict: true,
+    },
+  },
+  preview: {
+    port,
+    host: '0.0.0.0',
+    allowedHosts: true,
+    proxy: {
+      '/api': {
+        target: apiTarget,
+        changeOrigin: true,
+        secure: false,
+      }
+    }
+  },
+});

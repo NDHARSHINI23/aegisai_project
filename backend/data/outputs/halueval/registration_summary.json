@@ -1,0 +1,7 @@
+{
+  "dataset": "HaluEval-QA",
+  "trajectories_inserted": 50,
+  "avg_faithfulness_score": 0.49278612429605123,
+  "min_score": 2.1309565592098068e-05,
+  "max_score": 0.9999847094801223
+}

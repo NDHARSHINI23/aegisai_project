@@ -1,0 +1,239 @@
+stages:
+  download:
+    cmd: python pipelines/stage_download.py
+    deps:
+      - pipelines/stage_download.py
+    outs:
+      - data/raw/mmlu/
+      - data/raw/truthfulqa/
+      - data/raw/winobias/
+      - data/raw/pii_synthetic/
+  preprocess:
+    cmd: python pipelines/stage_preprocess.py
+    deps:
+      - pipelines/stage_preprocess.py
+      - data/raw/mmlu/
+      - data/raw/truthfulqa/
+      - data/raw/winobias/
+    params:
+      - dvc/params.yaml:
+          - preprocess.max_samples
+          - preprocess.random_seed
+    outs:
+      - data/processed/mmlu_features.parquet
+      - data/processed/winobias_features.parquet
+  embed:
+    cmd: python pipelines/stage_embed.py
+    deps:
+      - pipelines/stage_embed.py
+      - data/raw/truthfulqa/
+    params:
+      - dvc/params.yaml:
+          - embed.model_name
+    outs:
+      - data/processed/truthfulqa_embeddings.npy
+  evaluate:
+    cmd: python pipelines/stage_evaluate.py
+    deps:
+      - pipelines/stage_evaluate.py
+      - data/processed/mmlu_features.parquet
+      - data/processed/truthfulqa_embeddings.npy
+      - data/processed/winobias_features.parquet
+    params:
+      - dvc/params.yaml:
+          - evaluate.top_k_subjects
+    metrics:
+      - data/outputs/eval_scores.json:
+          cache: false
+  drift_baseline:
+    cmd: python pipelines/stage_drift_baseline.py
+    deps:
+      - pipelines/stage_drift_baseline.py
+      - data/processed/mmlu_features.parquet
+    params:
+      - dvc/params.yaml:
+          - drift.reference_window_days
+          - drift.psi_bins
+    outs:
+      - data/outputs/drift_baseline.json
+  bias:
+    cmd: python pipelines/stage_bias.py
+    deps:
+      - pipelines/stage_bias.py
+      - data/processed/winobias_features.parquet
+    metrics:
+      - data/outputs/bias_scores.json:
+          cache: false
+
+  # ── Phase 1: Credit Card Fraud Detection (MLOps backbone) ─────────────────
+  fraud_validate:
+    cmd: python ml/data/validate_dataset.py
+    deps:
+      - ml/data/validate_dataset.py
+      - data/raw/fraud/creditcard.csv
+    outs:
+      - data/processed/fraud/validation_report.json:
+          cache: false
+
+  fraud_train:
+    cmd: python ml/training/train_model.py
+    deps:
+      - ml/training/train_model.py
+      - data/raw/fraud/creditcard.csv
+      - data/processed/fraud/validation_report.json
+    params:
+      - dvc/params.yaml:
+          - fraud.max_samples
+          - fraud.random_seed
+          - fraud.test_size
+    outs:
+      - data/models/fraud/model.joblib
+      - data/models/fraud/training_metadata.json
+      - data/models/fraud/test_data.npz
+
+  fraud_evaluate:
+    cmd: python ml/evaluation/evaluate_model.py
+    deps:
+      - ml/evaluation/evaluate_model.py
+      - data/models/fraud/model.joblib
+      - data/models/fraud/test_data.npz
+    metrics:
+      - data/outputs/fraud/eval_report.json:
+          cache: false
+
+  # ── Phase 3: Adult / Census Income (Bias & Fairness) ───────────────────────
+  bias_validate:
+    cmd: python ml/bias/validate_dataset.py
+    deps:
+      - ml/bias/validate_dataset.py
+      - data/raw/adult/adult.csv
+    outs:
+      - data/processed/adult/validation_report.json:
+          cache: false
+
+  bias_train:
+    cmd: python ml/bias/train_model.py
+    deps:
+      - ml/bias/train_model.py
+      - data/raw/adult/adult.csv
+      - data/processed/adult/validation_report.json
+    outs:
+      - data/models/adult/model.joblib
+      - data/models/adult/test_data.pkl
+
+  bias_evaluate:
+    cmd: python ml/bias/evaluate_model.py
+    deps:
+      - ml/bias/evaluate_model.py
+      - data/models/adult/model.joblib
+      - data/models/adult/test_data.pkl
+    outs:
+      - data/outputs/adult/eval_report.json:
+          cache: false
+
+  bias_register:
+    cmd: python ml/bias/register_bias.py
+    deps:
+      - ml/bias/register_bias.py
+      - data/outputs/adult/eval_report.json
+
+  # ── Phase 4: HaluEval (Hallucination Detection) ────────────────────────────
+  halu_validate:
+    cmd: python ml/hallucination/validate_dataset.py
+    deps:
+      - ml/hallucination/validate_dataset.py
+    outs:
+      - data/processed/halueval/halueval_processed.csv
+      - data/processed/halueval/validation_report.json:
+          cache: false
+
+  halu_train:
+    cmd: python ml/hallucination/train_model.py
+    deps:
+      - ml/hallucination/train_model.py
+      - data/processed/halueval/halueval_processed.csv
+    outs:
+      - data/models/halueval/halueval_model.joblib
+      - data/models/halueval/test_data.pkl
+
+  halu_evaluate:
+    cmd: python ml/hallucination/evaluate_model.py
+    deps:
+      - ml/hallucination/evaluate_model.py
+      - data/models/halueval/halueval_model.joblib
+      - data/models/halueval/test_data.pkl
+    metrics:
+      - data/outputs/halueval/eval_report.json:
+          cache: false
+
+  halu_register:
+    cmd: python ml/hallucination/register_hallucination.py
+    deps:
+      - ml/hallucination/register_hallucination.py
+      - data/models/halueval/halueval_model.joblib
+      - data/processed/halueval/halueval_processed.csv
+
+  # ── Phase 5: Civil Comments (Toxicity / Safety Guardrail) ──────────────────
+  safety_validate:
+    cmd: python ml/safety/validate_dataset.py
+    deps:
+      - ml/safety/validate_dataset.py
+    outs:
+      - data/processed/civil_comments/civil_comments_processed.csv
+      - data/processed/civil_comments/validation_report.json:
+          cache: false
+
+  safety_train:
+    cmd: python ml/safety/train_model.py
+    deps:
+      - ml/safety/train_model.py
+      - data/processed/civil_comments/civil_comments_processed.csv
+    outs:
+      - data/models/civil_comments/toxicity_model.joblib
+      - data/models/civil_comments/test_data.pkl
+
+  safety_evaluate:
+    cmd: python ml/safety/evaluate_model.py
+    deps:
+      - ml/safety/evaluate_model.py
+      - data/models/civil_comments/toxicity_model.joblib
+      - data/models/civil_comments/test_data.pkl
+    metrics:
+      - data/outputs/civil_comments/eval_report.json:
+          cache: false
+
+  safety_register:
+    cmd: python ml/safety/register_safety.py
+    deps:
+      - ml/safety/register_safety.py
+      - data/models/civil_comments/toxicity_model.joblib
+      - data/processed/civil_comments/civil_comments_processed.csv
+
+  # ── Phase 6: AgentOps (BANKING77 Intent Recognition) ──────────────────────
+  agentops_validate:
+    cmd: python ml/agentops/validate_dataset.py
+    deps:
+      - ml/agentops/validate_dataset.py
+    outs:
+      - data/processed/banking77/banking77_processed.csv
+      - data/processed/banking77/validation_report.json:
+          cache: false
+
+  agentops_train:
+    cmd: python ml/agentops/train_model.py
+    deps:
+      - ml/agentops/train_model.py
+      - data/processed/banking77/banking77_processed.csv
+    outs:
+      - data/models/banking77/intent_model.joblib
+      - data/models/banking77/test_data.pkl
+
+  agentops_evaluate:
+    cmd: python ml/agentops/evaluate_model.py
+    deps:
+      - ml/agentops/evaluate_model.py
+      - data/models/banking77/intent_model.joblib
+      - data/models/banking77/test_data.pkl
+    metrics:
+      - data/outputs/banking77/eval_report.json:
+          cache: false

@@ -1,0 +1,11 @@
+{
+  "framework": "scikit-learn (TF-IDF + LinearSVC)",
+  "dataset": "PolyAI/banking77",
+  "classes": 77,
+  "metrics": {
+    "accuracy": 0.8179,
+    "precision_weighted": 0.828,
+    "recall_weighted": 0.8179,
+    "f1_score_weighted": 0.8172
+  }
+}

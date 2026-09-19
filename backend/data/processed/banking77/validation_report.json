@@ -1,0 +1,17 @@
+{
+  "dataset": "PolyAI/banking77",
+  "row_count": 9993,
+  "checks": {
+    "columns_present": {
+      "passed": true
+    },
+    "no_nulls": {
+      "passed": true
+    },
+    "intent_count": {
+      "passed": true,
+      "found": 77
+    }
+  },
+  "overall_passed": true
+}

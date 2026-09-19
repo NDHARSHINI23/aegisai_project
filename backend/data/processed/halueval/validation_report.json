@@ -1,0 +1,16 @@
+{
+  "dataset": "HaluEval-QA",
+  "row_count": 10000,
+  "checks": {
+    "schema": {
+      "passed": true
+    },
+    "null_values": {
+      "passed": true
+    },
+    "balance": {
+      "passed": true
+    }
+  },
+  "overall_passed": true
+}

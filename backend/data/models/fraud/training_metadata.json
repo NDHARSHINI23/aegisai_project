@@ -1,0 +1,17 @@
+{
+  "primary_model": "RandomForest",
+  "framework": "scikit-learn",
+  "algorithm": "RandomForest",
+  "dataset": "credit_card_fraud",
+  "train_samples": 20393,
+  "test_samples": 5099,
+  "test_size_pct": 20,
+  "random_seed": 42,
+  "train_duration_s": 1.02,
+  "models_compared": [
+    "LogisticRegression",
+    "RandomForest"
+  ],
+  "model_path": "C:\\Users\\DHARSHINI N\\AegisAI-Governance-Platform\\AegisAI-Governance-Platform\\backend\\data\\models\\fraud\\model.joblib",
+  "test_data_path": "C:\\Users\\DHARSHINI N\\AegisAI-Governance-Platform\\AegisAI-Governance-Platform\\backend\\data\\models\\fraud\\test_data.npz"
+}

@@ -1,0 +1,69 @@
+{
+  "dataset": "credit_card_fraud",
+  "model": "RandomForest",
+  "framework": "scikit-learn",
+  "evaluated_at": "2026-09-12T07:05:31.085901Z",
+  "mlflow_run_id": "0855705761f5423393abcdf08b42d028",
+  "mlflow_uri": "http://127.0.0.1:5001",
+  "metrics": {
+    "accuracy": 0.9955,
+    "precision": 0.963,
+    "recall": 0.7959,
+    "f1_score": 0.8715,
+    "roc_auc": 0.9819,
+    "confusion_matrix": [
+      [
+        4998,
+        3
+      ],
+      [
+        20,
+        78
+      ]
+    ],
+    "class_report": {
+      "0": {
+        "precision": 0.9960143483459546,
+        "recall": 0.9994001199760048,
+        "f1-score": 0.9977043617127458,
+        "support": 5001.0
+      },
+      "1": {
+        "precision": 0.9629629629629629,
+        "recall": 0.7959183673469388,
+        "f1-score": 0.8715083798882681,
+        "support": 98.0
+      },
+      "accuracy": 0.9954893116297313,
+      "macro avg": {
+        "precision": 0.9794886556544588,
+        "recall": 0.8976592436614718,
+        "f1-score": 0.934606370800507,
+        "support": 5099.0
+      },
+      "weighted avg": {
+        "precision": 0.9953791187386721,
+        "recall": 0.9954893116297313,
+        "f1-score": 0.9952789437447523,
+        "support": 5099.0
+      }
+    }
+  },
+  "training_meta": {
+    "primary_model": "RandomForest",
+    "framework": "scikit-learn",
+    "algorithm": "RandomForest",
+    "dataset": "credit_card_fraud",
+    "train_samples": 20393,
+    "test_samples": 5099,
+    "test_size_pct": 20,
+    "random_seed": 42,
+    "train_duration_s": 1.02,
+    "models_compared": [
+      "LogisticRegression",
+      "RandomForest"
+    ],
+    "model_path": "C:\\Users\\DHARSHINI N\\AegisAI-Governance-Platform\\AegisAI-Governance-Platform\\backend\\data\\models\\fraud\\model.joblib",
+    "test_data_path": "C:\\Users\\DHARSHINI N\\AegisAI-Governance-Platform\\AegisAI-Governance-Platform\\backend\\data\\models\\fraud\\test_data.npz"
+  }
+}

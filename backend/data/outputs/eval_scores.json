@@ -1,0 +1,14 @@
+{
+  "mmlu": {
+    "accuracy": 0.82,
+    "metric": "exact_match"
+  },
+  "truthfulqa": {
+    "accuracy": 0.82,
+    "metric": "exact_match"
+  },
+  "winobias": {
+    "accuracy": 0.78,
+    "metric": "exact_match"
+  }
+}

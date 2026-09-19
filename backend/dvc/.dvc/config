@@ -1,0 +1,4 @@
+[core]
+    analytics = false
+[remote "local_remote"]
+    url = /home/runner/aegisai-dvc-storage

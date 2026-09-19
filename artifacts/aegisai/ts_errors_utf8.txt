@@ -1,0 +1,4 @@
+﻿src/pages/workspace-pages.tsx(113,113): error TS2339: Property 'git_commit' does not exist on type 'RegisteredModel'.
+src/pages/workspace-pages.tsx(118,86): error TS2339: Property 'owner' does not exist on type 'RegisteredModel'.
+src/pages/workspace-pages.tsx(119,123): error TS2339: Property 'dataset_version' does not exist on type 'RegisteredModel'.
+src/pages/workspace-pages.tsx(124,110): error TS2339: Property 'training_date' does not exist on type 'RegisteredModel'.

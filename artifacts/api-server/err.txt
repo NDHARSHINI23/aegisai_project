@@ -1,0 +1,15 @@
+src/routes/aegisai.ts(5,46): error TS2305: Module '"@workspace/db/schema"' has no exported member 'retrainingRunsTable'.
+src/routes/aegisai.ts(5,67): error TS2305: Module '"@workspace/db/schema"' has no exported member 'driftHistoryTable'.
+src/routes/aegisai.ts(5,86): error TS2305: Module '"@workspace/db/schema"' has no exported member 'securityEventsTable'.
+src/routes/aegisai.ts(5,107): error TS2305: Module '"@workspace/db/schema"' has no exported member 'costLogsTable'.
+src/seed.ts(11,3): error TS2305: Module '"@workspace/db/schema"' has no exported member 'securityEventsTable'.
+src/seed.ts(12,3): error TS2724: '"@workspace/db/schema"' has no exported member named 'alertsTable'. Did you mean 'agentsTable'?
+src/seed.ts(13,3): error TS2305: Module '"@workspace/db/schema"' has no exported member 'driftHistoryTable'.
+src/seed.ts(14,3): error TS2305: Module '"@workspace/db/schema"' has no exported member 'biasScoresTable'.
+src/seed.ts(15,3): error TS2305: Module '"@workspace/db/schema"' has no exported member 'costLogsTable'.
+src/seed.ts(16,3): error TS2305: Module '"@workspace/db/schema"' has no exported member 'retrainingRunsTable'.
+src/services/alert_service.ts(3,10): error TS2724: '"@workspace/db/schema"' has no exported member named 'alertsTable'. Did you mean 'agentsTable'?
+src/services/alert_service.ts(3,28): error TS2724: '"@workspace/db/schema"' has no exported member named 'InsertAlert'. Did you mean 'InsertAgent'?
+src/services/bias_service.ts(3,10): error TS2305: Module '"@workspace/db/schema"' has no exported member 'biasScoresTable'.
+src/services/drift_service.ts(2,10): error TS2305: Module '"@workspace/db/schema"' has no exported member 'driftHistoryTable'.
+src/services/security_service.ts(2,10): error TS2305: Module '"@workspace/db/schema"' has no exported member 'securityEventsTable'.

@@ -1,0 +1,1042 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: AegisAI Governance Platform API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: dashboard
+  - name: models
+  - name: evaluation
+  - name: hallucination
+  - name: drift
+  - name: bias
+  - name: cost
+  - name: security
+  - name: alerts
+  - name: dvc
+  - name: retraining
+  - name: agents
+  - name: prompts
+  - name: experiments
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Dashboard overview metrics
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DashboardSummary" }
+  /models:
+    get:
+      operationId: getModels
+      tags: [models]
+      responses:
+        "200":
+          description: Registered models
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/RegisteredModel" }
+    post:
+      operationId: createModel
+      tags: [models]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ModelInput" }
+      responses:
+        "201":
+          description: Model registered
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RegisteredModel" }
+  /evaluation/results:
+    get:
+      operationId: getEvaluationResults
+      tags: [evaluation]
+      parameters:
+        - { $ref: "#/components/parameters/ModelId" }
+        - { name: benchmark, in: query, schema: { type: string } }
+      responses:
+        "200":
+          description: Evaluation results
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/EvaluationResult" }
+  /evaluation/run:
+    post:
+      operationId: runEvaluation
+      tags: [evaluation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EvaluationInput" }
+      responses:
+        "202":
+          description: Evaluation queued
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/JobStatus" }
+  /hallucination/summary:
+    get:
+      operationId: getHallucinationSummary
+      tags: [hallucination]
+      responses:
+        "200":
+          description: Faithfulness summary
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/HallucinationSummary" }
+  /hallucination/history:
+    get:
+      operationId: getHallucinationHistory
+      tags: [hallucination]
+      responses:
+        "200":
+          description: Faithfulness history
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/TimePoint" }
+  /hallucination/check:
+    post:
+      operationId: checkHallucination
+      tags: [hallucination]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/HallucinationInput" }
+      responses:
+        "200":
+          description: Faithfulness score
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HallucinationCheck" }
+  /drift/all:
+    get:
+      operationId: getAllDrift
+      tags: [drift]
+      responses:
+        "200":
+          description: Latest three-type drift status
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/DriftOverview" }
+  /drift/history/{modelId}:
+    get:
+      operationId: getDriftHistory
+      tags: [drift]
+      parameters:
+        - { $ref: "#/components/parameters/ModelIdPath" }
+      responses:
+        "200":
+          description: Drift history
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DriftHistory" }
+  /drift/explain/{modelId}/{driftType}:
+    get:
+      operationId: explainDrift
+      tags: [drift]
+      parameters:
+        - { $ref: "#/components/parameters/ModelIdPath" }
+        - { name: driftType, in: path, required: true, schema: { type: string, enum: [data, model, concept] } }
+      responses:
+        "200":
+          description: Drift explanation
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DriftExplanation" }
+  /drift/compute/{modelId}:
+    post:
+      operationId: computeDrift
+      tags: [drift]
+      parameters:
+        - { $ref: "#/components/parameters/ModelIdPath" }
+      responses:
+        "202":
+          description: Drift computation queued
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/JobStatus" }
+  /bias/scores:
+    get:
+      operationId: getBiasScores
+      tags: [bias]
+      responses:
+        "200":
+          description: Bias scores
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/BiasScore" }
+  /cost/summary:
+    get:
+      operationId: getCostSummary
+      tags: [cost]
+      responses:
+        "200":
+          description: Cost summary
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CostSummary" }
+  /cost/by-model:
+    get:
+      operationId: getCostByModel
+      tags: [cost]
+      responses:
+        "200":
+          description: Cost by model
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ModelCost" }
+  /cost/trend:
+    get:
+      operationId: getCostTrend
+      tags: [cost]
+      responses:
+        "200":
+          description: Daily cost trend
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/CostPoint" }
+  /security/events:
+    get:
+      operationId: getSecurityEvents
+      tags: [security]
+      responses:
+        "200":
+          description: Security events
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/SecurityEvent" }
+  /security/summary:
+    get:
+      operationId: getSecuritySummary
+      tags: [security]
+      responses:
+        "200":
+          description: Security summary
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SecuritySummary" }
+  /security/scan:
+    post:
+      operationId: scanSecurity
+      tags: [security]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SecurityScanInput" }
+      responses:
+        "200":
+          description: Scan result
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SecurityScanResult" }
+  /alerts:
+    get:
+      operationId: getAlerts
+      tags: [alerts]
+      responses:
+        "200":
+          description: Active alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Alert" }
+  /alerts/{id}/resolve:
+    put:
+      operationId: resolveAlert
+      tags: [alerts]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Resolved alert
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Alert" }
+  /dvc/status:
+    get:
+      operationId: getDvcStatus
+      tags: [dvc]
+      responses:
+        "200":
+          description: DVC pipeline state
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DvcStatus" }
+  /dvc/dag:
+    get:
+      operationId: getDvcDag
+      tags: [dvc]
+      responses:
+        "200":
+          description: DVC pipeline graph
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DvcDag" }
+  /dvc/repro:
+    post:
+      operationId: reproDvc
+      tags: [dvc]
+      responses:
+        "202":
+          description: Pipeline queued
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/JobStatus" }
+  /retrain/history:
+    get:
+      operationId: getRetrainHistory
+      tags: [retraining]
+      responses:
+        "200":
+          description: Retraining history
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/RetrainRun" }
+  /retrain/trigger:
+    post:
+      operationId: triggerRetrain
+      tags: [retraining]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RetrainInput" }
+      responses:
+        "202":
+          description: Retraining queued
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/JobStatus" }
+  /retrain/status/{taskId}:
+    get:
+      operationId: getRetrainStatus
+      tags: [retraining]
+      parameters:
+        - { name: taskId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Job state
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RetrainStatus" }
+  /agents:
+    get:
+      operationId: getAgents
+      tags: [agents]
+      responses:
+        "200":
+          description: Agent list
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AgentSummary" }
+    post:
+      operationId: createAgent
+      tags: [agents]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AgentInput" }
+      responses:
+        "201":
+          description: Agent created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AgentSummary" }
+  /agents/{id}:
+    get:
+      operationId: getAgent
+      tags: [agents]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Agent detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AgentDetail" }
+  /agents/{id}/status:
+    put:
+      operationId: updateAgentStatus
+      tags: [agents]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AgentStatusInput" }
+      responses:
+        "200":
+          description: Updated agent
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AgentSummary" }
+  /agents/{id}/trajectory:
+    post:
+      operationId: createAgentTrajectory
+      tags: [agents]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AgentTrajectoryInput" }
+      responses:
+        "201":
+          description: Trajectory recorded
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AgentTrajectory" }
+  /agents/{id}/trajectories:
+    get:
+      operationId: getAgentTrajectories
+      tags: [agents]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: page_size, in: query, schema: { type: integer, default: 20 } }
+      responses:
+        "200":
+          description: Paginated trajectories
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PaginatedAgentTrajectories" }
+  /prompts:
+    get:
+      operationId: getPrompts
+      tags: [prompts]
+      responses:
+        "200":
+          description: Latest prompt versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/PromptSummary" }
+    post:
+      operationId: createPrompt
+      tags: [prompts]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PromptInput" }
+      responses:
+        "201":
+          description: Prompt version created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PromptVersion" }
+  /prompts/{name}/versions:
+    get:
+      operationId: getPromptVersions
+      tags: [prompts]
+      parameters:
+        - { name: name, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Prompt version history
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/PromptVersion" }
+  /prompts/{name}/diff:
+    get:
+      operationId: getPromptDiff
+      tags: [prompts]
+      parameters:
+        - { name: name, in: path, required: true, schema: { type: string } }
+        - { name: from, in: query, required: true, schema: { type: integer } }
+        - { name: to, in: query, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: Prompt diff content
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PromptDiff" }
+  /prompts/{id}/evaluate:
+    post:
+      operationId: evaluatePrompt
+      tags: [prompts]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Evaluation result
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PromptEvalResult" }
+  /experiments:
+    get:
+      operationId: getExperiments
+      tags: [experiments]
+      responses:
+        "200":
+          description: MLflow experiments
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ExperimentSummary" }
+  /experiments/{experimentId}/runs:
+    get:
+      operationId: getExperimentRuns
+      tags: [experiments]
+      parameters:
+        - { name: experimentId, in: path, required: true, schema: { type: string } }
+        - { name: order_by, in: query, schema: { type: string } }
+      responses:
+        "200":
+          description: Experiment runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ExperimentRun" }
+  /experiments/runs/compare:
+    get:
+      operationId: compareExperimentRuns
+      tags: [experiments]
+      parameters:
+        - { name: run_ids, in: query, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Run comparison
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ExperimentRunCompare" }
+  /experiments/runs/{runId}:
+    get:
+      operationId: getExperimentRun
+      tags: [experiments]
+      parameters:
+        - { name: runId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Run detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ExperimentRunDetail" }
+  /experiments/runs/{runId}/artifacts:
+    get:
+      operationId: downloadExperimentArtifact
+      tags: [experiments]
+      parameters:
+        - { name: runId, in: path, required: true, schema: { type: string } }
+        - { name: path, in: query, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Artifact bytes
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+components:
+  parameters:
+    ModelId:
+      name: model_id
+      in: query
+      required: false
+      schema: { type: string }
+    ModelIdPath:
+      name: modelId
+      in: path
+      required: true
+      schema: { type: string }
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    RegisteredModel:
+      type: object
+      required: [id, name, version, framework, status, accuracy, latency_ms, registered_at]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        version: { type: string }
+        framework: { type: string }
+        endpoint_url: { type: ["string", "null"] }
+        description: { type: ["string", "null"] }
+        status: { type: string, enum: [active, staging, archived] }
+        accuracy: { type: number }
+        latency_ms: { type: number }
+        registered_at: { type: string }
+    ModelInput:
+      type: object
+      required: [name, version, framework]
+      properties:
+        name: { type: string }
+        version: { type: string }
+        framework: { type: string }
+        endpoint_url: { type: string }
+        description: { type: string }
+    DashboardSummary:
+      type: object
+      required: [total_models, active_models, total_agents, avg_hallucination_score, avg_drift_psi, total_cost_30d, open_alerts, critical_alerts, top_models_by_accuracy, recent_security_events, cost_trend_7d]
+      properties:
+        total_models: { type: number }
+        active_models: { type: number }
+        total_agents: { type: number }
+        avg_hallucination_score: { type: number }
+        avg_drift_psi: { type: number }
+        total_cost_30d: { type: number }
+        open_alerts: { type: number }
+        critical_alerts: { type: number }
+        top_models_by_accuracy:
+          type: array
+          items: { $ref: "#/components/schemas/ModelAccuracy" }
+        recent_security_events:
+          type: array
+          items: { $ref: "#/components/schemas/SecurityEvent" }
+        cost_trend_7d:
+          type: array
+          items: { $ref: "#/components/schemas/CostPoint" }
+    ModelAccuracy:
+      type: object
+      required: [model, accuracy]
+      properties:
+        model: { type: string }
+        accuracy: { type: number }
+    EvaluationInput:
+      type: object
+      required: [model_id]
+      properties:
+        model_id: { type: string }
+        benchmarks:
+          type: array
+          items: { type: string }
+    EvaluationResult:
+      type: object
+      required: [id, model_id, benchmark_name, subject, score, latency_ms, tokens_used, created_at]
+      properties:
+        id: { type: string }
+        model_id: { type: string }
+        benchmark_name: { type: string }
+        subject: { type: string }
+        score: { type: number }
+        latency_ms: { type: number }
+        tokens_used: { type: number }
+        created_at: { type: string }
+    JobStatus:
+      type: object
+      required: [task_id, status]
+      properties:
+        task_id: { type: string }
+        status: { type: string }
+    HallucinationSummary:
+      type: object
+      required: [model_id, model_name, score, delta, prompts_checked]
+      properties:
+        model_id: { type: string }
+        model_name: { type: string }
+        score: { type: number }
+        delta: { type: number }
+        prompts_checked: { type: number }
+    TimePoint:
+      type: object
+      required: [date, value]
+      properties:
+        date: { type: string }
+        value: { type: number }
+        series: { type: ["string", "null"] }
+    HallucinationInput:
+      type: object
+      required: [question, context, answer]
+      properties:
+        question: { type: string }
+        context: { type: string }
+        answer: { type: string }
+    HallucinationCheck:
+      type: object
+      required: [faithfulness_score, method]
+      properties:
+        faithfulness_score: { type: number }
+        method: { type: string }
+    DriftOverview:
+      type: object
+      required: [model_id, model_name, data_drift, model_drift, concept_drift]
+      properties:
+        model_id: { type: string }
+        model_name: { type: string }
+        data_drift: { $ref: "#/components/schemas/DriftMetric" }
+        model_drift: { $ref: "#/components/schemas/DriftMetric" }
+        concept_drift: { $ref: "#/components/schemas/DriftMetric" }
+    DriftMetric:
+      type: object
+      required: [status, value]
+      properties:
+        status: { type: string, enum: [stable, warning, critical] }
+        value: { type: number }
+        label: { type: ["string", "null"] }
+        details:
+          type: array
+          items: { type: string }
+    DriftHistory:
+      type: object
+      required: [data_drift, model_drift, concept_drift]
+      properties:
+        data_drift: { type: array, items: { $ref: "#/components/schemas/TimePoint" } }
+        model_drift: { type: array, items: { $ref: "#/components/schemas/TimePoint" } }
+        concept_drift: { type: array, items: { $ref: "#/components/schemas/TimePoint" } }
+    DriftExplanation:
+      type: object
+      required: [title, explanation, recommendation]
+      properties:
+        title: { type: string }
+        explanation: { type: string }
+        recommendation: { type: string }
+    BiasScore:
+      type: object
+      required: [model_id, model_name, overall, gender, race, religion]
+      properties:
+        model_id: { type: string }
+        model_name: { type: string }
+        overall: { type: number }
+        gender: { type: number }
+        race: { type: number }
+        religion: { type: number }
+    CostPoint:
+      type: object
+      required: [date, cost]
+      properties:
+        date: { type: string }
+        cost: { type: number }
+    CostSummary:
+      type: object
+      required: [total, delta]
+      properties:
+        total: { type: number }
+        delta: { type: number }
+    ModelCost:
+      type: object
+      required: [model_id, model_name, total_tokens, prompt_tokens, completion_tokens, estimated_cost_usd]
+      properties:
+        model_id: { type: string }
+        model_name: { type: string }
+        total_tokens: { type: number }
+        prompt_tokens: { type: number }
+        completion_tokens: { type: number }
+        estimated_cost_usd: { type: number }
+    SecurityEvent:
+      type: object
+      required: [id, model_name, event_type, severity, preview, created_at]
+      properties:
+        id: { type: string }
+        model_name: { type: string }
+        event_type: { type: string }
+        severity: { type: string, enum: [low, medium, high, critical] }
+        preview: { type: string }
+        created_at: { type: string }
+    SecuritySummary:
+      type: object
+      required: [pii, injection, toxic]
+      properties:
+        pii: { type: number }
+        injection: { type: number }
+        toxic: { type: number }
+    SecurityScanInput:
+      type: object
+      required: [text]
+      properties:
+        text: { type: string }
+        model_id: { type: string }
+    SecurityScanResult:
+      type: object
+      required: [risk, findings, masked_text]
+      properties:
+        risk: { type: string }
+        findings:
+          type: array
+          items: { type: object, additionalProperties: true }
+        masked_text: { type: string }
+    Alert:
+      type: object
+      required: [id, type, model_name, severity, message, created_at, is_resolved]
+      properties:
+        id: { type: string }
+        type: { type: string }
+        model_name: { type: string }
+        severity: { type: string, enum: [info, warning, critical] }
+        message: { type: string }
+        created_at: { type: string }
+        is_resolved: { type: boolean }
+    DvcStatus:
+      type: object
+      required: [status, stages, last_run]
+      properties:
+        status: { type: string }
+        stages:
+          type: array
+          items: { type: object, additionalProperties: true }
+        last_run: { type: string }
+    DvcDag:
+      type: object
+      required: [nodes, edges]
+      properties:
+        nodes:
+          type: array
+          items: { type: object, additionalProperties: true }
+        edges:
+          type: array
+          items: { type: object, additionalProperties: true }
+    RetrainInput:
+      type: object
+      required: [model_id, reason]
+      properties:
+        model_id: { type: string }
+        reason: { type: string }
+    RetrainRun:
+      type: object
+      required: [id, model_name, trigger_reason, started_at, old_accuracy, new_accuracy, delta, outcome, mlflow_run_id]
+      properties:
+        id: { type: string }
+        model_name: { type: string }
+        trigger_reason: { type: string }
+        started_at: { type: string }
+        old_accuracy: { type: number }
+        new_accuracy: { type: number }
+        delta: { type: number }
+        outcome: { type: string }
+        mlflow_run_id: { type: string }
+    RetrainStatus:
+      type: object
+      required: [state, progress, current_step]
+      properties:
+        state: { type: string }
+        progress: { type: number }
+        current_step: { type: string }
+    AgentInput:
+      type: object
+      required: [name, llm_model_id]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        llm_model_id: { type: string }
+        tools: { type: array, items: { type: string } }
+        max_tool_depth: { type: integer }
+        created_by: { type: string }
+    AgentStatusInput:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [active, staging, archived] }
+    AgentSummary:
+      type: object
+      required: [id, name, llm_model_id, model_name, model_version, tools, status, max_tool_depth, created_by, created_at, trajectory_count, avg_hallucination_score, tool_success_rate]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: ["string", "null"] }
+        llm_model_id: { type: string }
+        model_name: { type: string }
+        model_version: { type: string }
+        tools: { type: array, items: { type: string } }
+        status: { type: string }
+        max_tool_depth: { type: integer }
+        created_by: { type: string }
+        created_at: { type: string }
+        trajectory_count: { type: number }
+        avg_hallucination_score: { type: number }
+        tool_success_rate: { type: number }
+    AgentDetail:
+      allOf:
+        - { $ref: "#/components/schemas/AgentSummary" }
+        - type: object
+          required: [recent_trajectories]
+          properties:
+            recent_trajectories:
+              type: array
+              items: { $ref: "#/components/schemas/AgentTrajectory" }
+    AgentTrajectoryInput:
+      type: object
+      required: [session_id, final_output, context, question]
+      properties:
+        session_id: { type: string }
+        tool_calls: { type: array, items: { type: object, additionalProperties: true } }
+        final_output: { type: string }
+        context: { type: string }
+        question: { type: string }
+    AgentTrajectory:
+      type: object
+      required: [id, agent_id, session_id, tool_calls, tool_call_count, tool_success_count, final_output, latency_ms, created_at]
+      properties:
+        id: { type: string }
+        agent_id: { type: string }
+        session_id: { type: string }
+        tool_calls: { type: array, items: { type: object, additionalProperties: true } }
+        tool_call_count: { type: integer }
+        tool_success_count: { type: integer }
+        final_output: { type: string }
+        hallucination_score: { type: ["number", "null"] }
+        latency_ms: { type: integer }
+        created_at: { type: string }
+    PaginatedAgentTrajectories:
+      type: object
+      required: [items, total, page, page_size]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/AgentTrajectory" } }
+        total: { type: integer }
+        page: { type: integer }
+        page_size: { type: integer }
+    PromptInput:
+      type: object
+      required: [name, content]
+      properties:
+        name: { type: string }
+        content: { type: string }
+        parent_id: { type: string }
+        agent_id: { type: string }
+        model_id: { type: string }
+    PromptVersion:
+      type: object
+      required: [id, name, content, version_number, created_at]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        content: { type: string }
+        version_number: { type: integer }
+        agent_id: { type: ["string", "null"] }
+        parent_id: { type: ["string", "null"] }
+        model_id: { type: ["string", "null"] }
+        created_at: { type: string }
+        eval_score: { type: ["number", "null"] }
+        avg_tokens: { type: ["integer", "null"] }
+        avg_cost_usd: { type: ["number", "null"] }
+        mlflow_run_id: { type: ["string", "null"] }
+    PromptSummary:
+      allOf:
+        - { $ref: "#/components/schemas/PromptVersion" }
+        - type: object
+          properties:
+            agent_name: { type: ["string", "null"] }
+            model_name: { type: ["string", "null"] }
+    PromptDiff:
+      type: object
+      required: [from_content, to_content]
+      properties:
+        from_content: { type: string }
+        to_content: { type: string }
+    PromptEvalResult:
+      type: object
+      required: [prompt_version_id, eval_score, avg_tokens, avg_cost_usd, mlflow_run_id, created_at]
+      properties:
+        prompt_version_id: { type: string }
+        eval_score: { type: number }
+        avg_tokens: { type: integer }
+        avg_cost_usd: { type: number }
+        mlflow_run_id: { type: string }
+        created_at: { type: string }
+    ExperimentSummary:
+      type: object
+      required: [experiment_id, name, run_count]
+      properties:
+        experiment_id: { type: string }
+        name: { type: string }
+        run_count: { type: integer }
+    ExperimentRun:
+      type: object
+      required: [run_id, experiment_id, run_name, status, start_time, params, metrics, tags]
+      properties:
+        run_id: { type: string }
+        experiment_id: { type: string }
+        run_name: { type: string }
+        status: { type: string }
+        start_time: { type: number }
+        end_time: { type: ["number", "null"] }
+        params: { type: object, additionalProperties: { type: string } }
+        metrics: { type: object, additionalProperties: { type: number } }
+        tags: { type: object, additionalProperties: { type: string } }
+    ExperimentRunDetail:
+      allOf:
+        - { $ref: "#/components/schemas/ExperimentRun" }
+        - type: object
+          required: [metric_history, artifacts, mlflow_ui_url]
+          properties:
+            metric_history:
+              type: array
+              items:
+                type: object
+                required: [key, points]
+                properties:
+                  key: { type: string }
+                  points:
+                    type: array
+                    items:
+                      type: object
+                      required: [step, value, timestamp]
+                      properties:
+                        step: { type: number }
+                        value: { type: number }
+                        timestamp: { type: number }
+            artifacts:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+            mlflow_ui_url: { type: string }
+    ExperimentRunCompare:
+      type: object
+      required: [runs, params, metrics]
+      properties:
+        runs: { type: array, items: { $ref: "#/components/schemas/ExperimentRun" } }
+        params: { type: array, items: { type: object, additionalProperties: true } }
+        metrics: { type: array, items: { type: object, additionalProperties: true } }
+

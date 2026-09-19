@@ -1,0 +1,14 @@
+preprocess:
+  max_samples: 500
+  random_seed: 42
+embed:
+  model_name: all-MiniLM-L6-v2
+evaluate:
+  top_k_subjects: 10
+drift:
+  reference_window_days: 7
+  psi_bins: 10
+fraud:
+  max_samples: 50000
+  random_seed: 42
+  test_size: 0.20

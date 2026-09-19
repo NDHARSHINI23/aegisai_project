@@ -1,0 +1,3 @@
+[
+  "C:\\Users\\DHARSHINI N\\AegisAI-Governance-Platform\\AegisAI-Governance-Platform\\node_modules\\.pnpm\\lightningcss@1.32.0\\node_modules\\lightningcss\\node\\index.js"
+]
