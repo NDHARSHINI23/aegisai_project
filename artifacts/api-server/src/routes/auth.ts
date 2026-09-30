@@ -56,4 +56,42 @@ router.post("/auth/logout", requireAuth, async (req, res): Promise<void> => {
   res.status(204).send();
 });
 
+// ── FEATURE: Enterprise SSO / OAuth Mock ──
+// Setup OAuth callback URL for SAML / OIDC providers (e.g. Auth0, Microsoft Entra, Google Workspace)
+router.get("/auth/sso/google", (req, res): void => {
+  const redirectUri = encodeURIComponent("http://localhost:5000/api/auth/sso/callback");
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=MOCK_CLIENT_ID&redirect_uri=${redirectUri}&response_type=code&scope=email%20profile`;
+  // In a real flow, redirect to authUrl. Here we just return it so it can be verified.
+  res.redirect(authUrl);
+});
+
+router.get("/auth/sso/callback", async (req, res): Promise<void> => {
+  const { code } = req.query;
+  if (!code) { res.status(400).json({ error: "Missing OAuth code" }); return; }
+  
+  // 1. In standard OAuth, we exchange the code for an ID Token via Identity Provider here.
+  // 2. We verify the token, extract the email
+  const ssoEmail = "sso-admin@aegisai.local"; // Mock unpacked email
+
+  let [user] = await db.select().from(usersTable).where(eq(usersTable.email, ssoEmail)).limit(1);
+  
+  if (!user) {
+    // Just-in-time (JIT) provisioning for SSO users
+    [user] = await db.insert(usersTable).values({
+      email: ssoEmail, 
+      name: "SSO Admin (Auto-provisioned)", 
+      organization: "Enterprise Corp", 
+      role: "admin", 
+      passwordHash: "SSO_MANAGED_ACCOUNT" 
+    }).returning();
+  }
+
+  // 3. Issue AegisAI internal session token
+  const token = await createSession(user.id, { ipAddress: req.ip, userAgent: req.get("user-agent") });
+  res.cookie(SESSION_COOKIE, token, cookieOptions);
+  
+  // 4. Redirect straight into the dashboard
+  res.redirect("http://localhost:5173");
+});
+
 export default router;

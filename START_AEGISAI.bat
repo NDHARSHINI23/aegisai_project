@@ -18,28 +18,27 @@ echo [1/4] Starting PostgreSQL on port %PGPORT%...
 IF %ERRORLEVEL%==0 (
     echo       PostgreSQL started successfully.
 ) ELSE (
-    echo       PostgreSQL may already be running (OK).
+    echo       PostgreSQL may already be running, or check for errors.
 )
 echo.
 
 :: ── 2. Start MLflow ───────────────────────────────────────────
 echo [2/4] Starting MLflow Tracking Server on port 5001...
-cd /d "%PROJECT%"
-start "MLflow Server" cmd /c "mlflow server --host 127.0.0.1 --port 5001 --backend-store-uri sqlite:///mlflow.db"
+start "MLflow Server" cmd /k "cd /d ^"%PROJECT%^" && title MLflow Server && echo Starting MLflow... && mlflow server --host 127.0.0.1 --port 5001 --backend-store-uri sqlite:///mlflow.db"
 timeout /t 3 /nobreak > nul
 echo       MLflow started.
 echo.
 
 :: ── 3. Start API Backend ──────────────────────────────────────
 echo [3/4] Starting API Backend on port 5000...
-start "AegisAI API" cmd /c "cd /d "%PROJECT%" && pnpm --filter @workspace/api-server run dev"
+start "AegisAI API" cmd /k "cd /d ^"%PROJECT%^" && title AegisAI API && echo Starting API Server... && pnpm --filter @workspace/api-server run dev"
 timeout /t 8 /nobreak > nul
 echo       API server started.
 echo.
 
 :: ── 4. Start Frontend ─────────────────────────────────────────
 echo [4/4] Starting Frontend on port 5173...
-start "AegisAI Frontend" cmd /c "cd /d "%PROJECT%\artifacts\aegisai" && npx vite --config vite.config.ts --host 0.0.0.0"
+start "AegisAI Frontend" cmd /k "cd /d ^"%PROJECT%\artifacts\aegisai^" && title AegisAI Frontend && echo Starting Frontend... && npx vite --config vite.config.ts --host 0.0.0.0"
 timeout /t 5 /nobreak > nul
 echo       Frontend started.
 echo.

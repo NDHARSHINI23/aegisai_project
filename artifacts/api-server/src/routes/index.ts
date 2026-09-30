@@ -9,6 +9,7 @@ import authRouter from "./auth";
 import { requireAuth } from "../middleware/auth";
 import { enforcePermissions } from "../middleware/authorization";
 import settingsRouter from "./settings";
+import proxyRouter from "./proxy";
 import { recordAudit } from "../services/audit_service";
 
 const router: IRouter = Router();
@@ -31,5 +32,6 @@ router.use(agentsRouter);
 router.use(promptsRouter);
 router.use(experimentsRouter);
 router.use(aegisaiRouter);
+router.use("/proxy", proxyRouter);
 
 export default router;
